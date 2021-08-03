@@ -2,6 +2,7 @@ package io.realworld.backend.application.service;
 
 import static io.realworld.backend.application.dto.Mappers.toUserResponse;
 
+import io.realworld.backend.application.dto.Mappers;
 import io.realworld.backend.application.exception.EmailAlreadyUsedException;
 import io.realworld.backend.application.exception.InvalidPasswordException;
 import io.realworld.backend.application.exception.UserNotFoundException;
@@ -91,37 +92,24 @@ public class UserService extends BaseService implements UserApiDelegate, UsersAp
 
     final var update = req.getUser();
     final var email = update.getEmail();
-    if (email != null) {
-      if (!email.equals(user.getEmail())) {
-        userRepository
-            .findByEmail(email)
-            .ifPresent(
-                u -> {
-                  throw new EmailAlreadyUsedException("Email already used - " + email);
-                });
-      }
-      user.setEmail(email);
+    if (email != null && !email.equals(user.getEmail())) {
+      userRepository
+          .findByEmail(email)
+          .ifPresent(
+              u -> {
+                throw new EmailAlreadyUsedException("Email already used - " + email);
+              });
     }
     final var username = update.getUsername();
-    if (username != null) {
-      if (!username.equals(user.getUsername())) {
-        userRepository
-            .findByUsername(username)
-            .ifPresent(
-                u -> {
-                  throw new UsernameAlreadyUsedException("Username already used - " + username);
-                });
-      }
-      user.setUsername(username);
+    if (username != null && !username.equals(user.getUsername())) {
+      userRepository
+          .findByUsername(username)
+          .ifPresent(
+              u -> {
+                throw new UsernameAlreadyUsedException("Username already used - " + username);
+              });
     }
-    final var bio = update.getBio();
-    if (bio != null) {
-      user.setBio(bio);
-    }
-    final var image = update.getImage();
-    if (image != null) {
-      user.setImage(image);
-    }
+    Mappers.updateUser(user, update);
 
     return ok(toUserResponse(user, authenticationService.getCurrentToken().orElse("")));
   }

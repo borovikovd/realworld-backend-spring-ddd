@@ -1,6 +1,7 @@
 package io.realworld.backend.application.dto;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import io.realworld.backend.domain.aggregate.article.Article;
 import io.realworld.backend.domain.aggregate.comment.Comment;
 import io.realworld.backend.domain.aggregate.user.User;
@@ -8,11 +9,15 @@ import io.realworld.backend.rest.api.ArticleData;
 import io.realworld.backend.rest.api.CommentData;
 import io.realworld.backend.rest.api.MultipleArticlesResponseData;
 import io.realworld.backend.rest.api.MultipleCommentsResponseData;
+import io.realworld.backend.rest.api.NewArticleData;
+import io.realworld.backend.rest.api.NewCommentData;
 import io.realworld.backend.rest.api.ProfileData;
 import io.realworld.backend.rest.api.ProfileResponseData;
 import io.realworld.backend.rest.api.SingleArticleResponseData;
 import io.realworld.backend.rest.api.SingleCommentResponseData;
 import io.realworld.backend.rest.api.TagsResponseData;
+import io.realworld.backend.rest.api.UpdateArticleData;
+import io.realworld.backend.rest.api.UpdateUserData;
 import io.realworld.backend.rest.api.UserData;
 import io.realworld.backend.rest.api.UserResponseData;
 import java.time.ZoneOffset;
@@ -38,6 +43,26 @@ public class Mappers {
     final var res = new UserResponseData();
     res.setUser(userData);
     return res;
+  }
+
+  /** Updates user. * */
+  public static void updateUser(User user, UpdateUserData update) {
+    final var email = update.getEmail();
+    if (email != null) {
+      user.setEmail(email);
+    }
+    final var username = update.getUsername();
+    if (username != null) {
+      user.setUsername(username);
+    }
+    final var bio = update.getBio();
+    if (bio != null) {
+      user.setBio(bio);
+    }
+    final var image = update.getImage();
+    if (image != null) {
+      user.setImage(image);
+    }
   }
 
   /** Constructs ProfileResponseData response. */
@@ -85,6 +110,33 @@ public class Mappers {
     return resp;
   }
 
+  /** Constructs Article from the request. */
+  public static Article fromNewArticleData(NewArticleData newArticleData, User user) {
+    final var article = new Article();
+    article.setTitle(newArticleData.getTitle());
+    article.setDescription(newArticleData.getDescription());
+    article.setBody(newArticleData.getBody());
+    article.setAuthor(user);
+    article.setTags(ImmutableSet.copyOf(newArticleData.getTagList()));
+    return article;
+  }
+
+  /** Updates article. */
+  public static void updateArticle(Article article, UpdateArticleData updateArticleData) {
+    final var title = updateArticleData.getTitle();
+    if (title != null) {
+      article.setTitle(title);
+    }
+    final var description = updateArticleData.getDescription();
+    if (description != null) {
+      article.setDescription(description);
+    }
+    final var body = updateArticleData.getBody();
+    if (body != null) {
+      article.setBody(body);
+    }
+  }
+
   /** Constructs SingleCommentResponseData response. */
   public static SingleCommentResponseData toSingleCommentResponseData(
       Comment comment, boolean isFollowingAuthor) {
@@ -97,6 +149,16 @@ public class Mappers {
     commentData.setUpdatedAt(comment.getUpdatedAt().atOffset(ZoneOffset.UTC));
     resp.setComment(commentData);
     return resp;
+  }
+
+  /** Constructs Comment from the request. */
+  public static Comment fromNewCommentData(
+      NewCommentData commentData, Article article, User author) {
+    final var comment = new Comment();
+    comment.setArticle(article);
+    comment.setAuthor(author);
+    comment.setBody(commentData.getBody());
+    return comment;
   }
 
   /** Constructs MultipleCommentsResponseData response. */

@@ -1,6 +1,5 @@
 package io.realworld.backend.application.service;
 
-import com.google.common.collect.ImmutableSet;
 import io.realworld.backend.application.dto.Mappers;
 import io.realworld.backend.application.dto.Mappers.FavouriteInfo;
 import io.realworld.backend.application.dto.Mappers.MultipleFavouriteInfo;
@@ -9,7 +8,6 @@ import io.realworld.backend.application.util.BaseService;
 import io.realworld.backend.domain.aggregate.article.Article;
 import io.realworld.backend.domain.aggregate.article.ArticleRepository;
 import io.realworld.backend.domain.aggregate.article.OffsetBasedPageRequest;
-import io.realworld.backend.domain.aggregate.comment.Comment;
 import io.realworld.backend.domain.aggregate.comment.CommentRepository;
 import io.realworld.backend.domain.aggregate.favourite.ArticleFavourite;
 import io.realworld.backend.domain.aggregate.favourite.ArticleFavouriteId;
@@ -79,12 +77,7 @@ public class ArticleService extends BaseService implements ArticlesApiDelegate, 
     final var currentUser = currentUserOrThrow();
 
     final var newArticleData = req.getArticle();
-    final var article = new Article();
-    article.setTitle(newArticleData.getTitle());
-    article.setDescription(newArticleData.getDescription());
-    article.setBody(newArticleData.getBody());
-    article.setAuthor(currentUser);
-    article.setTags(ImmutableSet.copyOf(newArticleData.getTagList()));
+    final var article = Mappers.fromNewArticleData(newArticleData, currentUser);
     articleRepository.save(article);
 
     return articleResponse(article);
@@ -108,18 +101,7 @@ public class ArticleService extends BaseService implements ArticlesApiDelegate, 
         .map(
             article -> {
               final var updateArticleData = req.getArticle();
-              final var title = updateArticleData.getTitle();
-              if (title != null) {
-                article.setTitle(title);
-              }
-              final var description = updateArticleData.getDescription();
-              if (description != null) {
-                article.setDescription(description);
-              }
-              final var body = updateArticleData.getBody();
-              if (body != null) {
-                article.setBody(body);
-              }
+              Mappers.updateArticle(article, updateArticleData);
               articleRepository.save(article);
               return articleResponse(article);
             })
@@ -186,10 +168,8 @@ public class ArticleService extends BaseService implements ArticlesApiDelegate, 
         .map(
             article -> {
               final var isFollowingAuthor = isFollowingAuthor(article);
-              final var comment = new Comment();
-              comment.setArticle(article);
-              comment.setAuthor(currentUser);
-              comment.setBody(comment.getBody());
+              final var comment =
+                  Mappers.fromNewCommentData(commentData.getComment(), article, currentUser);
               return ok(
                   Mappers.toSingleCommentResponseData(
                       commentRepository.save(comment), isFollowingAuthor));
