@@ -25,6 +25,7 @@
     <checkerframework.version>3.12.0</checkerframework.version>
     <checker-guava.version>30.1.1-jre</checker-guava.version>
     <guava-failureaccess.version>1.0.1</guava-failureaccess.version>
+    <mapstruct.version>1.4.2.Final</mapstruct.version>
     <!--Copied from openapi-generator-maven-plugin output: -->
     <springfox-version>2.9.2</springfox-version>
     <swagger-version>1.6.2</swagger-version>
@@ -94,7 +95,17 @@
       <artifactId>failureaccess</artifactId>
       <version>${guava-failureaccess.version}</version>
     </dependency>
-
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct</artifactId>
+      <version>${mapstruct.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.mapstruct</groupId>
+      <artifactId>mapstruct-processor</artifactId>
+      <version>${mapstruct.version}</version>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- SpringFox has buggy dependency on swagger, so we override it here -->
     <dependency>
@@ -215,6 +226,11 @@
             <Xmaxwarns>10000</Xmaxwarns>
           </compilerArguments>
           <annotationProcessorPaths>
+            <path>
+              <groupId>org.mapstruct</groupId>
+              <artifactId>mapstruct-processor</artifactId>
+              <version>${mapstruct.version}</version>
+            </path>
             <path>
               <groupId>org.checkerframework</groupId>
               <artifactId>checker</artifactId>
